@@ -93,6 +93,22 @@ body {
     padding: 40px 20px 30px;
 }
 
+.page-header-brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-bottom: 10px;
+}
+
+.page-logo {
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+    flex-shrink: 0;
+    filter: drop-shadow(0 0 14px rgba(56, 189, 248, 0.35));
+}
+
 .page-header h1 {
     font-size: 2.5rem;
     font-weight: 900;
@@ -100,7 +116,7 @@ body {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    margin-bottom: 10px;
+    margin-bottom: 0;
     letter-spacing: -0.5px;
 }
 

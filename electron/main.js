@@ -11,7 +11,7 @@ function createWindow() {
         minHeight: 600,
         backgroundColor: '#0a0e17',
         title: 'Image Map Builder',
-        icon: path.join(__dirname, '..', 'build', 'icon.png'),
+        icon: path.join(__dirname, '..', 'build', 'icon.ico'),
         webPreferences: {
             // اپ فقط فایل‌های محلی را نمایش می‌دهد؛ نیازی به دسترسی Node در رندر نیست
             contextIsolation: true,
