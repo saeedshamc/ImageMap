@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ابزار Image Map سازنده</title>
+    <link rel="stylesheet" href="./vendor/vazirmatn/vazirmatn.css">
+    <link rel="stylesheet" href="./vendor/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+    <!-- پس‌زمینه -->
+    <div class="bg-grid"></div>
+    <div class="glow-orb glow-orb-1"></div>
+    <div class="glow-orb glow-orb-2"></div>
+
+    <!-- نمایش مختصات -->
+    <div class="coords-display" id="coordsDisplay">X: 0, Y: 0</div>
+
+    <!-- نوتیفیکیشن -->
+    <div class="toast" id="toast"></div>
+
+    <!-- مودال ویرایش -->
+    <div class="modal-backdrop" id="editModal">
+        <div class="modal-box">
+            <h3><i class="fas fa-edit edit-title-icon"></i>ویرایش ناحیه</h3>
+            <div class="input-group">
+                <label>نام ناحیه</label>
+                <input type="text" id="editName" placeholder="مثال: تهران">
+            </div>
+            <div class="input-group">
+                <label>لینک مقصد (href)</label>
+                <input type="text" id="editHref" placeholder="https://example.com" dir="ltr">
+            </div>
+            <div class="input-group">
+                <label>متن جایگزین (alt)</label>
+                <input type="text" id="editAlt" placeholder="توضیح کوتاه">
+            </div>
+            <div class="input-group">
+                <label for="editTarget">target</label>
+                <select id="editTarget">
+                    <option value="_self">همان پنجره (_self)</option>
+                    <option value="_blank">پنجره جدید (_blank)</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-primary" onclick="saveEdit()">
+                    <i class="fas fa-check"></i> ذخیره
+                </button>
+                <button class="btn-secondary" onclick="closeModal()">
+                    <i class="fas fa-times"></i> انصراف
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <!-- هدر -->
+        <header class="page-header fade-up">
+            <h1>Image Map Builder</h1>
+            <p>عکست رو آپلود کن و با کلیک روی نقاط مختلف، نواحی قابل کلیک بساز</p>
+        </header>
+
+        <!-- بخش آپلود -->
+        <div class="card fade-up mb-20" id="uploadCard">
+            <div class="card-body">
+                <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>عکس رو بکش و رها کن یا کلیک کن</p>
+                    <span class="browse-btn">انتخاب فایل</span>
+                    <input type="file" id="fileInput" accept="image/*" class="hidden" title="انتخاب فایل">
+                </div>
+                <!-- یا وارد کردن لینک دستی -->
+                <div class="upload-or-row">
+                    <span class="upload-or-label">یا لینک عکس:</span>
+                    <input type="text" id="manualUrl" placeholder="https://example.com/image.jpg یا مسیر محلی مثل ./images/map.jpg" dir="ltr" class="manual-url-input">
+                    <button class="btn-primary nowrap" onclick="loadManualUrl()">
+                        <i class="fas fa-link"></i> بارگذاری
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- لایه اصلی -->
+        <div class="grid-layout fade-up" id="mainGrid">
+            <!-- ستون چپ: عکس -->
+            <div>
+                <div class="card mb-20">
+                    <div class="card-header">
+                        <i class="fas fa-image"></i>
+                        پیش‌نمایش عکس و رسم نواحی
+                        <button class="btn-secondary header-action hidden" id="changeImageBtn" onclick="changeImage()">
+                            <i class="fas fa-sync-alt"></i> تغییر عکس
+                        </button>
+                    </div>
+                    <div class="card-body card-body-tight">
+                        <!-- نوار ابزار شکل -->
+                        <div class="shape-toolbar toolbar-spaced">
+                            <button class="shape-btn active" data-shape="rect" onclick="setShape('rect', this)">
+                                <i class="far fa-square"></i> مستطیل
+                            </button>
+                            <button class="shape-btn" data-shape="circle" onclick="setShape('circle', this)">
+                                <i class="far fa-circle"></i> دایره
+                            </button>
+                            <button class="shape-btn" data-shape="poly" onclick="setShape('poly', this)">
+                                <i class="fas fa-draw-polygon"></i> چندضلعی
+                            </button>
+                            <button class="shape-btn btn-undo-point hidden" onclick="undoLastPoint()" id="undoPointBtn">
+                                <i class="fas fa-undo"></i> بازگشت نقطه
+                            </button>
+                            <button class="shape-btn btn-finish-poly hidden" onclick="finishPoly()" id="finishPolyBtn">
+                                <i class="fas fa-check"></i> اتمام چندضلعی
+                            </button>
+                        </div>
+
+                        <!-- کانتینر عکس -->
+                        <div class="image-stage" id="imageContainer">
+                            <div class="empty-state" id="emptyImage">
+                                <i class="fas fa-map-marked-alt"></i>
+                                <p>ابتدا یک عکس بارگذاری کن</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- کد خروجی -->
+                <div class="card mb-20 hidden" id="codeCard">
+                    <div class="card-header">
+                        <i class="fas fa-code"></i>
+                        کد HTML خروجی
+                        <div class="code-actions">
+                            <button class="btn-secondary header-action" onclick="downloadHtml()">
+                                <i class="fas fa-download"></i> دانلود HTML
+                            </button>
+                            <button class="btn-primary header-action" onclick="copyCode()">
+                                <i class="fas fa-copy"></i> کپی
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body card-body-tight">
+                        <div class="shape-toolbar toolbar-spaced">
+                            <button class="shape-btn output-mode-btn active" onclick="setOutputMode('map', this)">
+                                <i class="fas fa-vector-square"></i> فقط img + map
+                            </button>
+                            <button class="shape-btn output-mode-btn" onclick="setOutputMode('page', this)">
+                                <i class="fas fa-file-code"></i> صفحه کامل HTML
+                            </button>
+                        </div>
+                        <div class="code-output" id="codeOutput"></div>
+                    </div>
+                </div>
+
+                <!-- پیش‌نمایش زنده -->
+                <div class="card hidden" id="previewCard">
+                    <div class="card-header">
+                        <i class="fas fa-play-circle"></i>
+                        پیش‌نمایش زنده (نواحی قابل کلیک)
+                    </div>
+                    <div class="card-body card-body-tight">
+                        <p class="preview-hint">
+                            موس را روی نواحی ببرید؛ با کلیک، لینک باز می‌شود.
+                        </p>
+                        <div class="preview-frame" id="previewFrame"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ستون راست: تنظیمات و لیست -->
+            <div>
+                <!-- تنظیمات خروجی -->
+                <div class="card mb-20 hidden" id="outputSettingsCard">
+                    <div class="card-header">
+                        <i class="fas fa-sliders-h"></i>
+                        تنظیمات خروجی
+                    </div>
+                    <div class="card-body">
+                        <div class="input-group">
+                            <label for="mapNameInput">نام نقشه (map name)</label>
+                            <input type="text" id="mapNameInput" value="mymap" placeholder="mymap" dir="ltr" oninput="updateCode()">
+                        </div>
+                        <div class="input-group">
+                            <label for="outputImagePath">مسیر/لینک عکس در خروجی (src)</label>
+                            <input type="text" id="outputImagePath" placeholder="./images/map.jpg" dir="ltr" oninput="updateCode()">
+                        </div>
+                        <div class="input-group">
+                            <label for="imageAltInput">متن جایگزین عکس (alt)</label>
+                            <input type="text" id="imageAltInput" placeholder="تصویر نقشه" oninput="updateCode()">
+                        </div>
+                        <label class="checkbox-row">
+                            <input type="checkbox" id="responsiveToggle" onchange="updateCode()">
+                            افزودن استایل واکنش‌گرا (max-width:100%)
+                        </label>
+                    </div>
+                </div>
+
+                <!-- تنظیمات ناحیه جدید -->
+                <div class="card mb-20">
+                    <div class="card-header">
+                        <i class="fas fa-cog"></i>
+                        تنظیمات ناحیه بعدی
+                    </div>
+                    <div class="card-body">
+                        <div class="input-group">
+                            <label for="areaName">نام ناحیه</label>
+                            <input type="text" id="areaName" placeholder="مثال: استان تهران">
+                        </div>
+                        <div class="input-group">
+                            <label for="areaHref">لینک مقصد (href)</label>
+                            <input type="text" id="areaHref" placeholder="https://example.com/tehran" dir="ltr">
+                        </div>
+                        <div class="input-group">
+                            <label for="areaAlt">متن جایگزین (alt)</label>
+                            <input type="text" id="areaAlt" placeholder="توضیح کوتاه برای دسترسی‌پذیری">
+                        </div>
+                        <div class="input-group">
+                            <label for="areaTarget">target</label>
+                            <select id="areaTarget">
+                                <option value="_self">همان پنجره (_self)</option>
+                                <option value="_blank">پنجره جدید (_blank)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- لیست نواحی -->
+                <div class="card mb-20">
+                    <div class="card-header">
+                        <i class="fas fa-layer-group"></i>
+                        نواحی تعریف شده
+                        <span id="areaCount" class="count-badge">0</span>
+                    </div>
+                    <div class="card-body card-body-tight">
+                        <div class="area-list" id="areaList">
+                            <div class="empty-state" id="emptyAreas">
+                                <i class="fas fa-mouse-pointer"></i>
+                                <p>هنوز ناحیه‌ای تعریف نشده</p>
+                            </div>
+                        </div>
+                        <div class="area-actions-row" id="areaActions" hidden>
+                            <button class="btn-danger btn-full" onclick="clearAllAreas()">
+                                <i class="fas fa-trash-alt"></i> پاک کردن همه
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- راهنما -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-question-circle"></i>
+                        راهنمای استفاده
+                    </div>
+                    <div class="card-body card-body-tight">
+                        <div class="help-text">
+                            <div><span class="key">مستطیل:</span> کلیک روی گوشه بالا-چپ و رها کردن روی گوشه پایین-راست</div>
+                            <div><span class="key">دایره:</span> کلیک روی مرکز و رها کردن روی لبه دایره</div>
+                            <div><span class="key">چندضلعی:</span> هر کلیک یک نقطه اضافه می‌کند، دکمه «اتمام» را بزنید</div>
+                            <div class="help-note">
+                                <span class="warn">توجه:</span> روی هر ناحیه در لیست کلیک کنید تا ویرایش شود
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="./js/app.js"></script>
+</body>
+</html>
