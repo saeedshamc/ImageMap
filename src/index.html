@@ -55,6 +55,22 @@
         </div>
     </div>
 
+    <!-- tooltip canvas -->
+    <div class="canvas-tooltip" id="canvasTooltip"></div>
+
+    <!-- مودال import -->
+    <div class="modal-backdrop" id="importModal">
+        <div class="modal-box modal-wide">
+            <h3><i class="fas fa-file-import edit-title-icon"></i> Import از HTML</h3>
+            <p class="modal-desc">کد HTML حاوی تگ map و area را paste کنید:</p>
+            <textarea id="importHtmlText" class="import-textarea" placeholder="<map name=...>...</map>" dir="ltr"></textarea>
+            <div class="modal-actions">
+                <button class="btn-primary" onclick="importHtmlFromPaste()"><i class="fas fa-check"></i> Import</button>
+                <button class="btn-secondary" onclick="closeImportModal()"><i class="fas fa-times"></i> انصراف</button>
+            </div>
+        </div>
+    </div>
+
     <div class="main-container">
         <!-- هدر -->
         <header class="page-header fade-up">
@@ -88,7 +104,7 @@
         <!-- لایه اصلی -->
         <div class="grid-layout fade-up" id="mainGrid">
             <!-- ستون چپ: عکس -->
-            <div>
+            <div id="leftColumn">
                 <div class="card mb-20">
                     <div class="card-header">
                         <i class="fas fa-image"></i>
@@ -109,12 +125,38 @@
                             <button class="shape-btn" data-shape="poly" onclick="setShape('poly', this)">
                                 <i class="fas fa-draw-polygon"></i> چندضلعی
                             </button>
+                            <button class="shape-btn mode-btn" data-mode="select" onclick="setInteractionMode('select', this)">
+                                <i class="fas fa-arrows-alt"></i> انتخاب
+                            </button>
+                            <button class="shape-btn mode-btn" data-mode="pan" onclick="setInteractionMode('pan', this)">
+                                <i class="fas fa-hand-paper"></i> جابجایی
+                            </button>
+                            <button class="shape-btn mode-btn" data-mode="wand" onclick="setInteractionMode('wand', this)">
+                                <i class="fas fa-magic"></i> Magic Wand
+                            </button>
                             <button class="shape-btn btn-undo-point hidden" onclick="undoLastPoint()" id="undoPointBtn">
                                 <i class="fas fa-undo"></i> بازگشت نقطه
                             </button>
                             <button class="shape-btn btn-finish-poly hidden" onclick="finishPoly()" id="finishPolyBtn">
-                                <i class="fas fa-check"></i> اتمام چندضلعی
+                                <i class="fas fa-check"></i> اتمام
                             </button>
+                        </div>
+
+                        <!-- zoom + undo -->
+                        <div class="tool-row toolbar-spaced">
+                            <button class="shape-btn btn-sm" onclick="zoomOut()" title="کوچک‌نمایی"><i class="fas fa-search-minus"></i></button>
+                            <span class="zoom-label" id="zoomLabel">100%</span>
+                            <button class="shape-btn btn-sm" onclick="zoomIn()" title="بزرگ‌نمایی"><i class="fas fa-search-plus"></i></button>
+                            <button class="shape-btn btn-sm" onclick="zoomReset()" title="بازنشانی"><i class="fas fa-compress"></i></button>
+                            <span class="tool-sep"></span>
+                            <button class="shape-btn btn-sm" id="undoBtn" onclick="undoHistory()" title="Ctrl+Z"><i class="fas fa-undo"></i></button>
+                            <button class="shape-btn btn-sm" id="redoBtn" onclick="redoHistory()" title="Ctrl+Y"><i class="fas fa-redo"></i></button>
+                            <button class="shape-btn btn-sm" id="splitViewBtn" onclick="toggleSplitView()" title="Split View"><i class="fas fa-columns"></i></button>
+                        </div>
+
+                        <!-- minimap -->
+                        <div class="minimap-wrap" id="minimapWrap" style="display:none">
+                            <canvas id="minimapCanvas"></canvas>
                         </div>
 
                         <!-- کانتینر عکس -->
@@ -133,8 +175,14 @@
                         <i class="fas fa-code"></i>
                         کد HTML خروجی
                         <div class="code-actions">
+                            <button class="btn-secondary header-action" onclick="downloadZip()">
+                                <i class="fas fa-file-archive"></i> ZIP
+                            </button>
+                            <button class="btn-secondary header-action" onclick="downloadPreviewPng()">
+                                <i class="fas fa-image"></i> PNG
+                            </button>
                             <button class="btn-secondary header-action" onclick="downloadHtml()">
-                                <i class="fas fa-download"></i> دانلود HTML
+                                <i class="fas fa-download"></i> HTML
                             </button>
                             <button class="btn-primary header-action" onclick="copyCode()">
                                 <i class="fas fa-copy"></i> کپی
@@ -143,12 +191,18 @@
                     </div>
                     <div class="card-body card-body-tight">
                         <div class="shape-toolbar toolbar-spaced">
-                            <button class="shape-btn output-mode-btn active" onclick="setOutputMode('map', this)">
+                            <button class="shape-btn output-mode-btn active" data-mode="map" onclick="setOutputMode('map', this)">
                                 <i class="fas fa-vector-square"></i> فقط img + map
                             </button>
-                            <button class="shape-btn output-mode-btn" onclick="setOutputMode('page', this)">
+                            <button class="shape-btn output-mode-btn" data-mode="page" onclick="setOutputMode('page', this)">
                                 <i class="fas fa-file-code"></i> صفحه کامل HTML
                             </button>
+                        </div>
+                        <div class="shape-toolbar toolbar-spaced export-framework-row">
+                            <button class="shape-btn btn-sm" onclick="exportReactComponent()"><i class="fab fa-react"></i> React</button>
+                            <button class="shape-btn btn-sm" onclick="exportVueComponent()"><i class="fab fa-vuejs"></i> Vue</button>
+                            <button class="shape-btn btn-sm" onclick="exportWordPressShortcode()"><i class="fab fa-wordpress"></i> WP</button>
+                            <button class="shape-btn btn-sm" onclick="downloadPreviewSvg()"><i class="fas fa-bezier-curve"></i> SVG</button>
                         </div>
                         <div class="code-output" id="codeOutput"></div>
                     </div>
@@ -171,6 +225,24 @@
 
             <!-- ستون راست: تنظیمات و لیست -->
             <div>
+                <!-- پروژه -->
+                <div class="card mb-20 hidden" id="projectCard">
+                    <div class="card-header">
+                        <i class="fas fa-folder-open"></i>
+                        پروژه
+                    </div>
+                    <div class="card-body card-body-tight">
+                        <div class="project-actions">
+                            <button class="btn-primary btn-sm-block" onclick="saveProject()"><i class="fas fa-save"></i> ذخیره (.imap.json)</button>
+                            <button class="btn-secondary btn-sm-block" onclick="document.getElementById('projectFileInput').click()"><i class="fas fa-folder-open"></i> بارگذاری</button>
+                            <input type="file" id="projectFileInput" accept=".json,.imap.json" class="hidden">
+                            <button class="btn-secondary btn-sm-block" onclick="openImportModal()"><i class="fas fa-file-import"></i> Import HTML</button>
+                            <button class="btn-secondary btn-sm-block" onclick="document.getElementById('importHtmlFileInput').click()"><i class="fas fa-file-code"></i> Import فایل HTML</button>
+                            <input type="file" id="importHtmlFileInput" accept=".html,.htm" class="hidden">
+                        </div>
+                    </div>
+                </div>
+
                 <!-- تنظیمات خروجی -->
                 <div class="card mb-20 hidden" id="outputSettingsCard">
                     <div class="card-header">
@@ -194,6 +266,33 @@
                             <input type="checkbox" id="responsiveToggle" onchange="updateCode()">
                             افزودن استایل واکنش‌گرا (max-width:100%)
                         </label>
+                        <label class="checkbox-row">
+                            <input type="checkbox" id="percentCoordsToggle" onchange="updateCode()">
+                            مختصات درصدی در خروجی (responsive coords)
+                        </label>
+                        <label class="checkbox-row">
+                            <input type="checkbox" id="snapGridToggle">
+                            Snap to grid
+                        </label>
+                        <div class="input-group">
+                            <label for="gridSizeInput">اندازه grid (px)</label>
+                            <input type="number" id="gridSizeInput" value="10" min="1" max="100">
+                        </div>
+                        <div class="input-group">
+                            <label for="wandTolerance">Magic Wand tolerance</label>
+                            <input type="range" id="wandTolerance" min="5" max="80" value="32">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- گزارش accessibility -->
+                <div class="card mb-20 hidden" id="a11yCard">
+                    <div class="card-header">
+                        <i class="fas fa-universal-access"></i>
+                        گزارش دسترسی‌پذیری
+                    </div>
+                    <div class="card-body card-body-tight">
+                        <div id="a11yReport" class="a11y-report"><p class="a11y-empty">ابتدا نواحی تعریف کنید</p></div>
                     </div>
                 </div>
 
@@ -234,6 +333,7 @@
                         <span id="areaCount" class="count-badge">0</span>
                     </div>
                     <div class="card-body card-body-tight">
+                        <input type="text" id="areaSearchInput" class="search-input" placeholder="جستجو در نواحی..." oninput="filterAreaList()">
                         <div class="area-list" id="areaList">
                             <div class="empty-state" id="emptyAreas">
                                 <i class="fas fa-mouse-pointer"></i>
@@ -256,11 +356,12 @@
                     </div>
                     <div class="card-body card-body-tight">
                         <div class="help-text">
-                            <div><span class="key">مستطیل:</span> کلیک روی گوشه بالا-چپ و رها کردن روی گوشه پایین-راست</div>
-                            <div><span class="key">دایره:</span> کلیک روی مرکز و رها کردن روی لبه دایره</div>
-                            <div><span class="key">چندضلعی:</span> هر کلیک یک نقطه اضافه می‌کند، دکمه «اتمام» را بزنید</div>
+                            <div><span class="key">انتخاب:</span> جابجایی و resize با handle — Delete برای حذف</div>
+                            <div><span class="key">Magic Wand:</span> کلیک روی ناحیه هم‌رنگ</div>
+                            <div><span class="key">Ctrl+Z/Y:</span> Undo / Redo</div>
+                            <div><span class="key">Scroll:</span> Zoom — حالت «جابجایی» برای pan</div>
                             <div class="help-note">
-                                <span class="warn">توجه:</span> روی هر ناحیه در لیست کلیک کنید تا ویرایش شود
+                                <span class="warn">توجه:</span> پروژه را با Save/Load ذخیره کنید
                             </div>
                         </div>
                     </div>
@@ -269,6 +370,12 @@
         </div>
     </div>
 
+    <script src="./vendor/jszip/jszip.min.js"></script>
+    <script src="./js/history.js"></script>
+    <script src="./js/project.js"></script>
+    <script src="./js/canvas-tools.js"></script>
+    <script src="./js/export-ext.js"></script>
+    <script src="./js/features.js"></script>
     <script src="./js/app.js"></script>
 </body>
 </html>

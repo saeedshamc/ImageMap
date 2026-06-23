@@ -746,7 +746,18 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: auto;
+    max-height: 70vh;
+    position: relative;
 }
+.image-stage-inner {
+    display: inline-block;
+    transition: transform 0.05s ease-out;
+}
+.image-wrapper.panning { cursor: grabbing !important; }
+.image-wrapper.mode-pan { cursor: grab; }
+.image-wrapper.mode-wand { cursor: cell; }
+.image-wrapper.mode-select { cursor: default; }
 .btn-undo-point { border-color: var(--warning); color: var(--warning); }
 .btn-finish-poly { border-color: var(--accent); color: var(--accent); }
 .code-actions { margin-right: auto; display: flex; gap: 8px; }
@@ -808,3 +819,148 @@ body {
 }
 .checkbox-row input { width: auto; }
 .edit-title-icon { color: var(--accent); margin-left: 8px; }
+
+/* --- فازهای جدید --- */
+.tool-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+.btn-sm { padding: 8px 12px; font-size: 0.75rem; }
+.zoom-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    min-width: 42px;
+    text-align: center;
+    direction: ltr;
+}
+.tool-sep {
+    width: 1px;
+    height: 20px;
+    background: var(--border);
+    margin: 0 4px;
+}
+.resize-handle {
+    position: absolute;
+    background: #fff;
+    border: 2px solid var(--accent);
+    border-radius: 2px;
+    z-index: 20;
+    pointer-events: auto;
+    cursor: nwse-resize;
+}
+.area-highlight.selected {
+    border-width: 3px;
+    box-shadow: 0 0 0 2px rgba(0, 232, 157, 0.4);
+}
+.area-item.selected {
+    border-color: var(--accent);
+    background: rgba(0, 232, 157, 0.06);
+}
+.project-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.btn-sm-block {
+    width: 100%;
+    justify-content: center;
+    padding: 8px 14px;
+    font-size: 0.8rem;
+}
+.search-input {
+    width: 100%;
+    padding: 8px 12px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--fg);
+    font-family: 'Vazirmatn', sans-serif;
+    font-size: 0.85rem;
+    margin-bottom: 12px;
+    outline: none;
+}
+.search-input:focus { border-color: var(--accent); }
+.dup-btn {
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 6px;
+    background: rgba(0, 196, 255, 0.1);
+    color: var(--accent2);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.color-picker {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.canvas-tooltip {
+    position: fixed;
+    background: var(--card);
+    border: 1px solid var(--accent);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    z-index: 200;
+    pointer-events: none;
+    display: none;
+    max-width: 220px;
+}
+.canvas-tooltip.show { display: block; }
+.minimap-wrap {
+    margin-bottom: 12px;
+    text-align: left;
+}
+.minimap-wrap canvas {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    opacity: 0.85;
+}
+.a11y-report { font-size: 0.8rem; }
+.a11y-item {
+    padding: 8px 10px;
+    border-radius: 6px;
+    margin-bottom: 6px;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+}
+.a11y-warn { background: rgba(255, 179, 71, 0.1); color: var(--warning); }
+.a11y-info { background: rgba(0, 196, 255, 0.08); color: var(--accent2); }
+.a11y-ok { color: var(--accent); }
+.a11y-empty { color: var(--muted); }
+.modal-wide { max-width: 560px; }
+.modal-desc { color: var(--muted); font-size: 0.85rem; margin-bottom: 12px; }
+.import-textarea {
+    width: 100%;
+    min-height: 160px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--fg);
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    padding: 12px;
+    resize: vertical;
+    outline: none;
+}
+.export-framework-row { margin-bottom: 12px; }
+#leftColumn.split-active {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+}
+#leftColumn.split-active #previewCard {
+    display: block !important;
+    position: sticky;
+    top: 16px;
+}
+#undoBtn:disabled, #redoBtn:disabled { opacity: 0.35; cursor: not-allowed; }
