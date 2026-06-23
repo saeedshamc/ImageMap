@@ -1,0 +1,113 @@
+روژه را کامل مرور کردم. الان یک ابزار تمیز و کاربردی داری — ولی چند جهت هست که می‌تواند از «ابزار ساده» به «ابزار حرفه‌ای» تبدیل شود.
+
+الان چه داری (خلاصه)
+بخش	وضعیت
+رسم rect / circle / poly
+✅
+drag & drop، URL، touch
+✅
+ویرایش/حذف، پیش‌نمایش زنده، export HTML
+✅
+آفلاین + Electron
+✅
+چیزهایی که هنوز نیست: undo/redo، save/load پروژه، import از HTML، جابه‌جایی/resize با ماوس، zoom، مختصات درصدی (responsive coords).
+
+پیشنهادهای خفن — اولویت‌بندی‌شده
+Tier 1 — بیشترین impact، منطقی برای این پروژه
+1. Save / Load پروژه (JSON)
+همه نواحی + تنظیمات + مرجع عکس در یک فایل .json یا .imap.
+کاربر وسط کار نره، بعداً ادامه بده — برای Electron خیلی ارزشمند است.
+
+2. Import از HTML موجود
+Parse کردن <map> + <area> و بارگذاری روی عکس.
+تبدیل شدن به «ویرایشگر» نه فقط «سازنده».
+
+3. Undo / Redo (Ctrl+Z / Ctrl+Y)
+بعد از اضافه/حذف/ویرایش ناحیه — ساده ولی حس حرفه‌ای می‌دهد.
+
+4. Drag & Resize نواحی روی canvas
+الان فقط modal ویرایش داری؛ handle گوشه‌ها برای resize و drag برای جابه‌جایی UX را چند برابر می‌کند.
+
+5. مختصات درصدی (Responsive Image Map)
+یکی از مهم‌ترین قابلیت‌هایی که اکثر ابزارها ندارند:
+
+<!-- coords به جای پیکسل، درصد از ابعاد عکس -->
+<area coords="10%,20%,30%,40%" ...>
+برای سایت‌های responsive واقعاً game-changer است.
+
+Tier 2 — جذاب و تمایزدهنده
+6. Export بسته کامل (ZIP)
+یک کلیک → index.html + images/map.jpg + README کوچک.
+کاربر دیگر دستی فایل‌ها را جدا نمی‌گذارد.
+
+7. Export تصویر preview (PNG/SVG)
+خروجی visual map با رنگ هر ناحیه — برای مستندسازی و ارائه.
+
+8. Zoom & Pan روی عکس بزرگ
+نقشه ایران، پلان ساختمان، infographic — بدون zoom رسم دقیق سخت است.
+
+9. Snap to grid / snap to edge
+تراز خودکار برای نواحی منظم (مثلاً grid 10px).
+
+10. جستجو و فیلتر در لیست نواحی
+وقتی ۵۰+ ناحیه داری، پیدا کردن «تهران» بدون scroll طولانی.
+
+11. Duplicate ناحیه + رنگ/دسته‌بندی
+هر گروه یک رنگ — مثلاً استان‌ها آبی، شهرها سبز.
+
+12. Tooltip hover روی canvas
+هاور → نام + لینک ناحیه (الان فقط label ثابت داری).
+
+Tier 3 — wow factor / آینده‌دار
+13. Auto-detect با Magic Wand
+کلیک روی ناحیه هم‌رنگ → polygon خودکار (flood fill).
+برای نقشه‌های رنگی (استان‌ها، organ diagram) خیلی جذاب است.
+
+14. قالب‌های آماده (Templates)
+«نقشه ایران»، «پلان طبقه»، «دیاگرام بدن» — با راهنمای مختصات.
+
+15. گزارش Accessibility
+هشدار: ناحیه بدون alt، href خالی، ناحیه خیلی کوچک برای کلیک.
+
+16. Export برای فریم‌ورک‌ها
+React component، Vue، WordPress shortcode — برای developerها.
+
+17. Auto-save در localStorage
+بستن accidental → بازگشت پروژه.
+
+18. حالت Split View
+نیمه editor، نیمه live preview — همزمان.
+
+19. Minimap
+برای عکس‌های خیلی بزرگ، نمای کلی + viewport.
+
+20. Multi-map روی یک عکس
+چند <map> با toggle — use case خاص ولی حرفه‌ای.
+
+پیشنهاد من برای roadmap
+فاز 1
+Save/Load + Undo
+Drag/Resize
+Responsive coords
+Import HTML + ZIP export
+Zoom + Magic Wand
+فاز	قابلیت	چرا
+۱
+Save/Load + Undo
+پایه هر ابزار جدی
+۲
+Drag/Resize
+UX اصلی editor
+۳
+Responsive coords
+تمایز واقعی نسبت به رقبا
+۴
+Import HTML + ZIP export
+workflow کامل
+۵
+Zoom + Magic Wand
+خفن و viral
+سه تا که «باحال‌ترین» به نظر می‌رسند
+Magic Wand — یک کلیک، polygon خودکار
+Responsive coords (درصدی) — مشکل واقعی responsive image map
+Export ZIP یک‌کلیکی — از ابزار به محصول آماده تحویل
